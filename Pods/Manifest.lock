@@ -1,0 +1,38 @@
+PODS:
+  - Alamofire (4.7.2)
+  - ObjectMapper (3.1.0)
+  - SnapKit (4.0.0)
+  - SQLite.swift (0.11.4):
+    - SQLite.swift/standard (= 0.11.4)
+  - SQLite.swift/standard (0.11.4)
+  - SwiftyJSON (4.1.0)
+  - Toast-Swift (3.0.1)
+
+DEPENDENCIES:
+  - Alamofire (~> 4.7)
+  - ObjectMapper (= 3.1.0)
+  - SnapKit (~> 4.0.0)
+  - SQLite.swift (= 0.11.4)
+  - SwiftyJSON (~> 4.0)
+  - Toast-Swift (~> 3.0.1)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Alamofire
+    - ObjectMapper
+    - SnapKit
+    - SQLite.swift
+    - SwiftyJSON
+    - Toast-Swift
+
+SPEC CHECKSUMS:
+  Alamofire: e4fa87002c137ba2d8d634d2c51fabcda0d5c223
+  ObjectMapper: 20505058f54e5c3ca69e1d6de9897d152a5369a6
+  SnapKit: a42d492c16e80209130a3379f73596c3454b7694
+  SQLite.swift: 3e3bee21da701b5b9f87c4a672cb54f233505692
+  SwiftyJSON: c29297daf073d2aa016295d5809cdd68045c39b3
+  Toast-Swift: ba0b01b095aada709d915f9beb1d38184a2721c3
+
+PODFILE CHECKSUM: a1156807ae3b2898f8a03f0d2f6eda3bb53e3b65
+
+COCOAPODS: 1.5.2

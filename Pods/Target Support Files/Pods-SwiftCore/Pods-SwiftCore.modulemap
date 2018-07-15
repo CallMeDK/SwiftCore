@@ -1,0 +1,6 @@
+framework module Pods_SwiftCore {
+  umbrella header "Pods-SwiftCore-umbrella.h"
+
+  export *
+  module * { export * }
+}
