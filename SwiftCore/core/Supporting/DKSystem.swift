@@ -6,120 +6,98 @@
 //  Copyright © 2018年 dkpro. All rights reserved.
 //
 
-import UIKit
 import Foundation
-
-public extension DispatchQueue {
-    private static var _onceTracker = [String]()
-
-    public class func once(token: String, block:()->Void) {
-        objc_sync_enter(self)
-        defer { objc_sync_exit(self) }
-        
-        if _onceTracker.contains(token) {
-            return
-        }
-        
-        _onceTracker.append(token)
-        block()
-    }
-}
 
 class DKSystem {
     class DKSystemDevice {
         /*!
-         * 设备名称
+         * Device name
          */
-        var name:String? {
+        var name: String? {
             return UIDevice.current.name
         }
         /*!
-         * 系統名稱
+         * System name
          */
-        var sysName:String? {
+        var sysName: String? {
             return UIDevice.current.systemName
         }
         /*!
-         * 系統版本
+         * System version
          */
-        var version:String? {
+        var version: String? {
             return UIDevice.current.systemVersion
         }
-        
-        var platform:String? {
-            if let key = "dk.machine".cString(using: String.Encoding.utf8) {
-                var size: Int = 0
-                sysctlbyname(key, nil, &size, nil, 0)
-                var machine = [CChar](repeating: 0, count: Int(size))
-                sysctlbyname(key, &machine, &size, nil, 0)
-                return String.init(cString: machine)
+
+        var platform: String? {
+            let key = "hw.machine"
+            var size: size_t = 0
+            sysctlbyname(key, nil, &size, nil, 0)
+            var machine = [CChar](repeating: 0, count: Int(size))
+            if sysctlbyname(key, &machine, &size, nil, 0) == 0 {
+                return String(cString: machine)
             }
             return nil
         }
-        
+
         /*!
-         * 设备模式
+         * Device model
          */
-        var model:String? {
+        var model: String? {
             return UIDevice.current.model
         }
         /*!
-         * 本地设备模式
+         * Localized device model
          */
-        var locModel:String? {
+        var locModel: String? {
             return UIDevice.current.localizedModel
         }
     }
-    
+
     class DKSystemApp {
         /*!
-         * 应用名称
+         * App name
          */
-        var name:String? {
-            return Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String
+        var name: String? {
+            guard let info = Bundle.main.infoDictionary else { return nil }
+            return info["CFBundleDisplayName"] as? String ?? info["CFBundleName"] as? String
         }
         /*!
-         * 应用版本
+         * App version
          */
-        var version:String? {
-            return Bundle.main.infoDictionary?["CFBundleShortVersionString"]  as? String
+        var version: String? {
+            return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         }
         /*!
-         *  Build版本
+         * Build version
          */
-        var build:String? {
+        var build: String? {
             return Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         }
     }
-    
+
     class DKSystemLocale {
         /*!
-         * 本地化语言
+         * Preferred language
          */
-        var language:String? {
-            return NSLocale.preferredLanguages[0]
+        var language: String? {
+            return Locale.preferredLanguages.first
         }
         /*!
-         * 本地化国家
+         * Country code
          */
-        var country:String? {
-            return NSLocale.current.identifier
+        var country: String? {
+            return Locale.current.regionCode
         }
     }
-    
-    let device  = DKSystemDevice()
-    let app     = DKSystemApp()
-    let locale  = DKSystemLocale()
-    
-    //单例
-    static var instance: DKSystem?
-    
-    class var shared: DKSystem {
-        DispatchQueue.once(token: "com.DKSystem.dk") {
-           instance = DKSystem()
-        }
-        return DKSystem.instance!
-    }
-    
+
+    let device = DKSystemDevice()
+    let app = DKSystemApp()
+    let locale = DKSystemLocale()
+
+    // Singleton
+    static let shared = DKSystem()
+
+    private init() {}
 }
 
