@@ -11,113 +11,122 @@ import SQLite
 
 protocol DKCacheProtocol {
     func cacheKey() -> String?
-    func unarchiver(json:String)
+    func unarchiver(json: String)
     func archiver() -> String?
 }
 
 class DKCache {
     class DKTable {
-        var filePath: String {
-            return NSHomeDirectory().appending("/Documents/cache.sqlite")
-        }
-        let c_tname = "cache"
-        let c_vname = "version"
+        let filePath: String
+        let cacheTableName = "cache"
 
         let key = Expression<String>("key")
         let datas = Expression<Data?>("datas")
         let type = Expression<Int>("type")
-        
-        let table = Expression<String>("table")
-        let vraw = Expression<Int>("version")
-        
+
+        private var db: Connection?
+
         init() {
+            filePath = NSHomeDirectory().appending("/Documents/cache.sqlite")
             if !FileManager.default.fileExists(atPath: filePath) {
                 do {
-                    let db = try Connection(filePath)
-                    let cache = Table(c_tname)
-                    
-                    try db.run(cache.create { t in
+                    db = try Connection(filePath)
+                    let cache = Table(cacheTableName)
+
+                    try db!.run(cache.create { t in
                         t.column(key, primaryKey: true)
                         t.column(datas)
                         t.column(type)
                     })
-                    
-                    let version = Table(c_vname)
-                    try db.run(version.create{ t in
-                        t.column(table, primaryKey: true)
-                        t.column(vraw)
-                    })
-
-                    let insert = version.insert(or: .replace, table <- c_tname, vraw <- 1)
-                    try db.run(insert)
                 } catch let error as NSError {
                     print("创建缓存数据库失败 \(error.description)")
-                    try! FileManager.default.removeItem(atPath: filePath)
+                    try? FileManager.default.removeItem(atPath: filePath)
+                    db = nil
+                }
+            } else {
+                do {
+                    db = try Connection(filePath)
+                } catch {
+                    print("连接缓存数据库失败")
+                    db = nil
                 }
             }
         }
-        
-        func insert(key k:String,datas d:Data,type t:Int) throws {
-            let db = try Connection(filePath)
-            let caches = Table(c_tname)
+
+        func insert(key k: String, datas d: Data, type t: Int) throws {
+            guard let db = db else { throw NSError(domain: "DKCache", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database not available"]) }
+            let caches = Table(cacheTableName)
             let insert = caches.insert(or: .replace, key <- k, datas <- d, type <- t)
             try db.run(insert)
         }
-        
-        func select(key k:String, type t:Int) throws -> Data? {
-            let db = try Connection(filePath)
-            let caches = Table(c_tname)
+
+        func select(key k: String, type t: Int) throws -> Data? {
+            guard let db = db else { throw NSError(domain: "DKCache", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database not available"]) }
+            let caches = Table(cacheTableName)
             let select = caches.select(datas).filter(key == k).filter(type == t)
-            
-            if let row = try? db.prepare(select).first(where: { (rows) -> Bool in
-                return true
-            }) {
-                return try! row?.get(datas)
+
+            if let row = try db.prepare(select).first(where: { _ in true }) {
+                return try row.get(datas)
             }
             return nil
         }
     }
-    
-    enum CacheType:Int {
+
+    enum CacheType: Int {
         case model = 1
         case setting = 2
     }
-    
-    let table:DKTable = DKTable()
-    var queue:Dictionary<String,Data> = Dictionary<String,Data>()
 
-    static var instance: DKCache?
-    
-    class var shared: DKCache {
-        DispatchQueue.once(token: "com.DKCache.dk") {
-            instance = DKCache()
-        }
-        return DKCache.instance!
+    private let table: DKTable
+    private var queue: [String: Data] = [:]
+    private let queueLock = NSLock()
+    private let maxQueueSize = 1000 // 最大内存缓存项数
+
+    static let shared = DKCache()
+
+    private init() {
+        table = DKTable()
     }
-    
-    func tKey(type:CacheType=CacheType.model , value:String)->String {
+
+    private func tKey(type: CacheType = .model, value: String) -> String {
         return "\(type.rawValue)$_\(value)"
     }
-    
-    func cache(key:String, datas:Data, type:CacheType) throws {
-        let vkey = tKey(type: type, value:key)
+
+    func cache(key: String, datas: Data, type: CacheType) throws {
+        let vkey = tKey(type: type, value: key)
+        queueLock.lock()
         queue[vkey] = datas
-        do {
-            try table.insert(key: vkey, datas: datas, type: type.rawValue)
-        } catch let error {
-            throw error
+        if queue.count > maxQueueSize {
+            // 简单策略：移除最旧的项（这里随机移除一个，实际可实现LRU）
+            if let keyToRemove = queue.keys.first {
+                queue.removeValue(forKey: keyToRemove)
+            }
         }
+        queueLock.unlock()
+        try table.insert(key: vkey, datas: datas, type: type.rawValue)
     }
-    
-    func cache(key:String, type:CacheType) ->Data? {
-        let vkey = tKey(type: type, value:key)
+
+    func cache(key: String, type: CacheType) -> Data? {
+        let vkey = tKey(type: type, value: key)
+        queueLock.lock()
         var _datas = queue[vkey]
-        
+        queueLock.unlock()
+
         if _datas == nil {
             do {
                 _datas = try table.select(key: vkey, type: type.rawValue)
+                if let data = _datas {
+                    queueLock.lock()
+                    queue[vkey] = data
+                    if queue.count > maxQueueSize {
+                        if let keyToRemove = queue.keys.first {
+                            queue.removeValue(forKey: keyToRemove)
+                        }
+                    }
+                    queueLock.unlock()
+                }
             } catch {
-                print("查询缓存异常")
+                print("查询缓存异常: \(error)")
             }
         }
         return _datas
