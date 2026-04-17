@@ -9,13 +9,13 @@
 import Foundation
 import SQLite
 
-protocol DKCacheProtocol {
+public protocol DKCacheProtocol {
     func cacheKey() -> String?
     func unarchiver(json: String)
     func archiver() -> String?
 }
 
-class DKCache {
+public class DKCache {
     class DKTable {
         let filePath: String
         let cacheTableName = "cache"
@@ -59,7 +59,6 @@ class DKCache {
             let insert = caches.insert(or: .replace, key <- k, datas <- d, type <- t)
             try db.run(insert)
         }
-
         func select(key k: String, type t: Int) throws -> Data? {
             guard let db = db else { throw NSError(domain: "DKCache", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database not available"]) }
             let caches = Table(cacheTableName)

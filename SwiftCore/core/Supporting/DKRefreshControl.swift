@@ -14,23 +14,23 @@ let contentOffsetKeyPath = "contentOffset"
 let contentSizeKeyPath = "contentSize"
 let DKSwitchRefreshFootViewHeight:CGFloat = 40
 
-enum DKRefreshType: Int {
-    case Header
-    case Footer
+public enum DKRefreshType: Int {
+    case header
+    case footer
 }
 
-enum DKRefreshStatus: Int {
-    case Normal = 1
-    case Visible
-    case Targger
-    case Loading
+public enum DKRefreshStatus: Int {
+    case normal = 1
+    case visible
+    case trigger
+    case loading
 }
 
 class DKrefreshControl {
     
 }
 
-class DKHeaderControl: UIRefreshControl {
+public class DKHeaderControl: UIRefreshControl {
     var scrollView:UIScrollView?
     var refreshAction:(()->Void)?
 
@@ -45,7 +45,7 @@ class DKHeaderControl: UIRefreshControl {
         
         self.scrollView?.addSubview(self)
         self.attributedTitle = NSAttributedString.init(string: "松开后自动刷新")
-        self.addTarget(self, action: "_refreshActioin", for: UIControlEvents.valueChanged)
+        self.addTarget(self, action: #selector(_refreshActioin), for: .valueChanged)
         self.beginRefreshing()
         self.endRefreshing()
     }
@@ -66,7 +66,7 @@ class DKHeaderControl: UIRefreshControl {
     }
 }
 
-class DKFooterControl: UIControl {
+public class DKFooterControl: UIControl {
     class DKFooterView: UIView {
         let textLabel = UILabel.view(font: DKFounction.FONT(s: 13), color: UIColor.black)
         let activityView = UIActivityIndicatorView.init(activityIndicatorStyle: UIActivityIndicatorViewStyle.white)
@@ -94,10 +94,10 @@ class DKFooterControl: UIControl {
         
         func setStatus(status:DKRefreshStatus) {
             switch status {
-            case .Normal,.Visible:
+            case .normal,.visible:
                 activityView.stopAnimating()
                 textLabel.text = "上拉加载更多"
-            case .Targger:
+            case .trigger:
                 activityView.stopAnimating()
                 textLabel.text = "上拉加载更多"
             case .Loading:
@@ -166,14 +166,14 @@ class DKFooterControl: UIControl {
             if isEnabled {
                 _refreshStatus = newValue
                 switch newValue {
-                case .Normal:
+                case .normal:
                     var ei: UIEdgeInsets = contentInset; ei.top = 0
                     self.updateContentOffset(ei: ei)
-                case .Visible:
+                case .visible:
                     print("Visible")
-                case .Targger:
-                    print("Targger")
-                case .Loading:
+                case .trigger:
+                    print("Trigger")
+                case .loading:
                     var ei: UIEdgeInsets = contentInset ; ei.top = 0
                     ei.bottom = ei.bottom + kRefreshHeight
                     self.updateContentOffset(ei: ei)
@@ -194,7 +194,7 @@ class DKFooterControl: UIControl {
                 ei.bottom = ei.bottom + kRefreshHeight
                 self.updateContentOffset(ei: ei)
             } else {
-                refreshStatus = .Normal
+                refreshStatus = .normal
             }
         }
     }

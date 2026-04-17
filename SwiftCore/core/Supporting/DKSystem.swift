@@ -7,8 +7,9 @@
 //
 
 import Foundation
+import UIKit
 
-class DKSystem {
+public class DKSystem {
     class DKSystemDevice {
         /*!
          * Device name

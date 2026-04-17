@@ -11,7 +11,7 @@ import Alamofire
 import SwiftyJSON
 import ObjectMapper
 
-class DKDataParams {
+public class DKDataParams {
     var URL: String {
         return "https://www.apiopen.top/novelApi"
     }
@@ -19,36 +19,36 @@ class DKDataParams {
     
     //默认请求参数
     private var nParams:Dictionary<String,Any> {
-        var _params = Dictionary<String,AnyObject>()
-        _params["version_os"] = DKSystem.shared.device.version as AnyObject
-        _params["os"] = DKSystem.shared.device.sysName as AnyObject
-        _params["bundleVersion"] = DKSystem.shared.app.build as AnyObject
-        _params["version_pro"] = "1.0" as AnyObject
-        _params["manufacturer"] = DKSystem.shared.device.model as AnyObject
-        _params["language"] = DKSystem.shared.locale.language as AnyObject
-        _params["model"] = DKSystem.shared.device.platform as AnyObject
+        var _params = Dictionary<String,Any>()
+        _params["version_os"] = DKSystem.shared.device.version as Any
+        _params["os"] = DKSystem.shared.device.sysName as Any
+        _params["bundleVersion"] = DKSystem.shared.app.build as Any
+        _params["version_pro"] = "1.0" as Any
+        _params["manufacturer"] = DKSystem.shared.device.model as Any
+        _params["language"] = DKSystem.shared.locale.language as Any
+        _params["model"] = DKSystem.shared.device.platform as Any
         return _params
     }
     
-    var params:Dictionary<String,AnyObject> = Dictionary<String,AnyObject>()
+    var params:Dictionary<String,Any> = Dictionary<String,Any>()
     
-    init(type:Int, params p:Dictionary<String,AnyObject>?) {
+    init(type:Int, params p:Dictionary<String,Any>? = nil) {
         self.type = type
-        self.params["requestType"] = type as AnyObject
+        self.params["requestType"] = type as Any
         for (key, value) in nParams {
-            self.params[key] = value as AnyObject
+            self.params[key] = value
         }
         
         if let data = p {
             for (key, value) in data {
-                self.params[key] = value as AnyObject
+                self.params[key] = value
             }
         }
     }
 }
 
 typealias RequestBlock = ((_ result:Any?,_ error:NSError?) -> Void)?
-class DKDataController {
+public class DKDataController {
     var queue:Dictionary<Int,Request> =  Dictionary<Int,Request>()
     func request(params:DKDataParams, anClass:AnyClass?, completed:(RequestBlock)) -> Request {
         let request = Alamofire.request(params.URL, method: HTTPMethod.post, parameters: params.params)

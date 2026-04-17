@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-class DKFounction {
+public class DKFunction {
     //国际化
     static func TR(text:String) -> String {
         return NSLocalizedString(text, comment: text)
@@ -47,7 +47,7 @@ class DKFounction {
     }
     
     static func inset(t:CGFloat,_ l:CGFloat,_ b:CGFloat,_ r:CGFloat)->UIEdgeInsets {
-        return UIEdgeInsetsMake(t, l, b, r)
+        return UIEdgeInsets(top: t, left: l, bottom: b, right: r)
     }
     
     //UIImage

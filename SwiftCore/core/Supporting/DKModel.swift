@@ -10,11 +10,11 @@ import Foundation
 import SwiftyJSON
 import ObjectMapper
 
-protocol DKAnalysisProtocol {
+public protocol DKAnalysisProtocol {
     static func model(json:JSON?, error:NSError?)->AnyObject?
 }
 
-class DKModel: Mappable, DKCacheProtocol {
+public class DKModel: Mappable, DKCacheProtocol {
     var modelDate:Date? = Date()
 
     private var _cacheKey: String?

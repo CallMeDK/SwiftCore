@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-class DKTabelViewCell: UITableViewCell {
+public class DKTableViewCell: UITableViewCell {
     var model:AnyObject?
     
     class func height(model:AnyObject? = nil) -> CGFloat {
@@ -22,14 +22,14 @@ class DKTabelViewCell: UITableViewCell {
     }
 }
 
-class DKTableViewModel {
+public class DKTableViewModel {
     var indexPath:IndexPath?
 
     var vClass:AnyClass!
     var model:AnyObject?
     
     var height: CGFloat {
-        if let aClass:DKTabelViewCell.Type = vClass as? DKTabelViewCell.Type {
+        if let aClass:DKTableViewCell.Type = vClass as? DKTableViewCell.Type {
             return aClass.height(model: model)
         }
         return 0
@@ -41,7 +41,7 @@ class DKTableViewModel {
     }
 }
 
-class DKTableViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
+public class DKTableViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
     let tableView:UITableView = UITableView.init(frame: CGRect.zero, style: UITableViewStyle.plain)
     var _viewModels:[DKTableViewModel]?
     var _vModels: [DKTableViewModel] {
@@ -87,13 +87,13 @@ class DKTableViewController: UIViewController,UITableViewDelegate,UITableViewDat
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let decelerate = (self.tableView.isDragging == false && self.tableView.isDecelerating == false);
         let vm = _vModels[indexPath.row]
-        var cell:DKTabelViewCell?
+        var cell:DKTableViewCell?
         
         if let vClass = vm.vClass {
-            let identifier = DKFounction.identify(aClass: vClass)
+            let identifier = DKFunction.identify(aClass: vClass)
             vm.indexPath = indexPath
             
-            cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath) as? DKTabelViewCell
+            cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath) as? DKTableViewCell
             cell?.model = vm.model
             cell?.tableView(tableView: tableView, decelerate: decelerate)
         }
@@ -105,13 +105,13 @@ class DKTableViewController: UIViewController,UITableViewDelegate,UITableViewDat
     var indexPaths:[IndexPath] = [IndexPath]()
     func tableView(tableView:UITableView, decelerate: Bool) {
         self.tableView.visibleCells.forEach { (cell) in
-            if let _cell:DKTabelViewCell = cell as? DKTabelViewCell {
+            if let _cell:DKTableViewCell = cell as? DKTableViewCell {
                 _cell.tableView(tableView: tableView, decelerate: decelerate)
             }
         }
         if decelerate {
             indexPaths.forEach({ (indexPath) in
-                if let _cell = tableView.cellForRow(at: indexPath) as? DKTabelViewCell {
+                if let _cell = tableView.cellForRow(at: indexPath) as? DKTableViewCell {
                     _cell.tableView(tableView: tableView, decelerate: decelerate)
                 }
             })
